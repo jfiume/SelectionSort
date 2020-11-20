@@ -23,7 +23,7 @@ StopWDT     mov.w   #WDTPW|WDTHOLD,&WDTCTL  ; Stop watchdog timer
 ;-------------------------------------------------------------------------------
 ; Main loop here
 ;-------------------------------------------------------------------------------
-.data
+		.data
 List:	.byte 100, 25, 75, 80, 35, 2, 127, 60, 18, 40, 15, 66, 90, 66, 10, 115, 59, 50, 28, 41
 numListElements:
 		.byte 20
@@ -36,9 +36,11 @@ numListElements:
 	clr.b R8		;local smallest value
 	clr.b R9		;current index
 
-select:
+
 	mov.w #List, R4
-	mov.b R4, R5
+	mov.b @R4, R8
+select:
+	mov.b @R4, R5
 	cmp.b R5, R8
 	jl increment
 	mov.b R5, R8
@@ -46,7 +48,25 @@ select:
 increment:
 	inc.b R9
 	inc.w R4
+	cmp.b R9, numListElements
+	jz swap
 	jmp select
+swap:
+	mov.b @R6(List), @R7(List)
+	mov.b R8, @R6(List)
+	inc.b R6
+	cmp.w R6, R9
+	jz end
+	mov.w #List, R4
+	add.w R6, R4
+	mov.b @R4, R8
+	clr.b R7
+	add.b R6, R7
+	clr.b R9
+	add.b R6, R9
+	jmp select
+end:
+	jmp $
                                             
 
 ;-------------------------------------------------------------------------------
